@@ -4,12 +4,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Dict, Any, Optional
+import os
 
 import cv2
 import json
 from pathlib import Path
 from scipy.spatial.transform import Rotation as R
 from whaledrone_hackathon_code.dataset import load_flight
+from whaledrone_hackathon_code.geo_utils import distance_points
 
 ROOT_DIR = Path("/share/projects/whale_drone_hack")
 
@@ -28,10 +30,10 @@ for flight_dir in ALL_FLIGHTS:
     srt_files = sorted(flight_dir.glob("*.SRT"))
     csv_files = sorted(flight_dir.glob("*.csv"))
 
-    print(f"\nFlight: {flight_day}")
-    print(f"  Video files: {len(video_files)}")
-    print(f"  SRT files: {len(srt_files)}")
-    print(f"  CSV files: {len(csv_files)}")
+    # print(f"\nFlight: {flight_day}")
+    # print(f"  Video files: {len(video_files)}")
+    # print(f"  SRT files: {len(srt_files)}")
+    # print(f"  CSV files: {len(csv_files)}")
 
     flight_info_dict = {
         "flight_day": flight_day,
@@ -193,11 +195,15 @@ def pixel_to_gps(
         u_corr = u
         v_corr = v
     pixel = np.array([u_corr, v_corr, 1.0])
-    print(pixel)
-
+    
     # 3. Rayon dans le repère caméra
     ray_cam = np.linalg.inv(K) @ pixel
     ray_cam = ray_cam / np.linalg.norm(ray_cam)
+
+    R_cam_to_drone = R.from_euler(
+         "XYZ", [0, -90, 0], degrees=degrees
+        ).as_matrix()
+
 
     # 4. Rotation caméra -> monde local
     R_cam_to_world = R.from_euler(
@@ -205,13 +211,13 @@ def pixel_to_gps(
     ).as_matrix()
 
 
-    ray_world = R_cam_to_world @ ray_cam
+    ray_world = R_cam_to_world @ R_cam_to_drone @ ray_cam
     ray_world = ray_world / np.linalg.norm(ray_world)
 
     if debug:
         print("Rotation Matrix : ", R_cam_to_world)
         print("Ray cam : ", ray_cam)
-        print("Ray world : ", ray_world)
+        print("Ray worldo : ", ray_world)
 
     # 5. Intersection avec le sol z = 0
     if abs(ray_world[2]) < 1e-8:
@@ -249,7 +255,7 @@ def pixel_to_gps(
     #dlat = north_offset / R_earth
     #dlon = east_offset / (R_earth * np.cos(np.radians(drone_lat)))
 
-    lat_obj = np.degrees(lat_ob_rad)
+    lat_obj = np.degrees(lat_ob_rad) 
     lon_obj = np.degrees(lon_obj_rad)
     if debug:
         print(f"Résultat: lat={lat_obj:.8f}, lon={lon_obj:.8f}")
@@ -333,7 +339,10 @@ def save_frame_with_fixed_point(
     k,
     dist_coeffs=None,
     grid_step=100,
+    gt_lat=None,
+    gt_lon=None,
     output_dir="frames_with_gps_points",
+    compute_type="init"
 ):
     """
     Affiche/sauvegarde une frame avec un point pixel fixe et calcule sa position GPS.
@@ -376,36 +385,38 @@ def save_frame_with_fixed_point(
             f"Point pixel invalide: x={x}, y={y}. "
             f"L'image a une taille w={w}, h={h}."
         )
+    if compute_type == "init":
+        pix_gps = pixel_to_gps(
+            u=x,
+            v=y,
+            K=k,
+            drone_lat=row["latitude"],
+            drone_lon=row["longitude"],
+            altitude_agl=row["rel_alt"],
+            yaw=row["gb_yaw"],
+            pitch=row["gb_pitch"],
+            roll=row["gb_roll"],
+            dist_coeffs=dist_coeffs,
+            degrees=False,
+        )
+    elif compute_type == "fov":
+        fov = Fov()
+        fov.set_image_size(w, h)
+        fov.set_camera_params(
+            camera_matrix=k,
+            dist_coefficients=dist_coeffs,
+            horizontal_fov=65.76,
+            vertical_fov=39.96,
+        )
 
-    # pix_gps = pixel_to_gps(
-    #     u=x,
-    #     v=y,
-    #     K=k,
-    #     drone_lat=row["latitude"],
-    #     drone_lon=row["longitude"],
-    #     altitude_agl=row["rel_alt"],
-    #     yaw=row["gb_yaw"],
-    #     pitch=row["gb_pitch"],
-    #     roll=row["gb_roll"],
-    #     dist_coeffs=dist_coeffs,
-    #     degrees=False,
-    # )
-
-    fov = Fov()
-    fov.set_image_size(w, h)
-    fov.set_camera_params(
-        camera_matrix=k,
-        dist_coefficients=dist_coeffs,
-        horizontal_fov=65.76,
-        vertical_fov=39.96,
-    )
-    
-    pix_gps = fov.get_gps_point(
-        image_point=(x, y),
-        drone_height=row["rel_alt"],
-        yaw_pitch_roll=(row["gb_yaw"], row["gb_pitch"], row["gb_roll"]),
-        pos=(row["latitude"], row["longitude"]),
-    )
+        print(f"row: {row}")
+        
+        pix_gps = fov.get_gps_point(
+            image_point=(x, y),
+            drone_height=row["rel_alt"],
+            yaw_pitch_roll=(row["gb_yaw"], row["gb_pitch"], row["gb_roll"]),
+            pos=(row["latitude"], row["longitude"]),
+        )
 
     fig, ax = plt.subplots(figsize=(15, 14))
     ax.imshow(image_rgb, origin="upper", extent=(0, w, h, 0))
@@ -430,18 +441,24 @@ def save_frame_with_fixed_point(
 
     ax.plot(x, y, "ro", markersize=8)
 
+    error = distance_points(gt_lat, gt_lon, pix_gps[0], pix_gps[1]) if gt_lat is not None and gt_lon is not None else None
+
     ax.text(
         10,
         30,
-        f"x={x}, y={y}; Lat={pix_gps[0]:.8f}, Lon={pix_gps[1]:.8f}",
+        f"x={x}, y={y};\n\
+          Pred Lat={pix_gps[0]:.8f}, Pred Lon={pix_gps[1]:.8f}\n\
+            GT Lat={gt_lat:.8f}, GT Lon={gt_lon:.8f}\n\
+            Error={error:.8f}m",
         color="yellow",
         fontsize=12,
         bbox=dict(facecolor="black", alpha=0.6),
     )
 
     fig.tight_layout()
-
-    output_path = output_dir / f"frame_{frame_number:06d}_x{x}_y{y}.png"
+    out_dir = output_dir / f"{compute_type}"
+    os.makedirs(out_dir, exist_ok=True)
+    output_path = out_dir / f"frame_{frame_number:06d}_x{x}_y{y}.png"
     fig.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
 
@@ -577,6 +594,7 @@ class Fov:
         vector = np.array([x, y, z])
         return vector
 
+
     def get_horizon_and_world_corners(
         self, world_point_dict: dict[Any, Any], yaw_pitch_roll: tuple[float, float, float]
     ) -> defaultdict[Any, list[dict[str, int]]]:
@@ -670,14 +688,18 @@ class Fov:
 
 if __name__ == "__main__":
     # Example usage of the pixel_to_gps function with a specific flight and video acquisition
-    FLIGHT_DAY = "Jan-16th-2026-02-49PM-Flight-Airdata"
+    FLIGHT = "Jan-16th-2026-02-49PM-Flight-Airdata"
+    flight_dir = ROOT_DIR_DATASET / FLIGHT
+    
+    annotations_file = f"annotations_{FLIGHT}.csv"
+    annotation_path = ROOT_DIR_DATASET / annotations_file
+
     VIDEO_ACQUISITION = "DJI_20260116154954_0001_V"
     flight_info_dict = get_sub_info_dict(
-        data_json_dict=DATA_JSON, key="flight_day", value=FLIGHT_DAY
+        data_json_dict=DATA_JSON, key="flight_day", value=FLIGHT
     )
 
-    flight_dir = Path("/share/projects/whale_drone_hack/WhaleDrone_Hackathon_dataset/Annotated") / FLIGHT_DAY
-    annotation_path = ROOT_DIR_METADATA / FLIGHT_DAY / flight_info_dict["annotations_file"]
+    
 
     df = load_flight(annotation_path, flight_dir)
 
@@ -690,46 +712,57 @@ if __name__ == "__main__":
     meta_data = video_info_dict["metadata_file"]
     video_file = video_info_dict["video_file"]
 
-    segment = video_file
+    print(f"video_file: {video_file}")
+    segment = ROOT_DIR_DATASET / FLIGHT / video_file
 
-    df_testing_segment = df[df["video_segment"] == segment]
+    df_testing_segment = df[df["segment"] == segment]
+    sel_cols = ["name", "frame", "image_x", "image_y", "lat", "lon"]
+    print(df_testing_segment[sel_cols].iloc[0:10])
+    
+    k, dist_coeffs = load_intrinsics(CALIB)
 
-    df_testing_segment.head(10)
+    if meta_data is None:
+        print(
+            f"No metadata found for flight {FLIGHT} and video acquisition {VIDEO_ACQUISITION}."
+        )
+    else:
+        metadata_path = ROOT_DIR_METADATA / FLIGHT / meta_data
+        acquisition_data_csv = pd.read_csv(metadata_path)
 
-    # k, dist_coeffs = load_intrinsics(CALIB)
+    save_number = 0
+    for index, row in acquisition_data_csv.iterrows():
+        # frame_number = row["frame_cnt"]
+        for index_2, row_2 in df_testing_segment.iterrows():
+            
+            frame_number = row_2["frame"]
+            x = row_2["image_x"]
+            y = row_2["image_y"]
 
-    # if meta_data is None:
-    #     print(
-    #         f"No metadata found for flight {FLIGHT_DAY} and video acquisition {VIDEO_ACQUISITION}."
-    #     )
-    # else:
-    #     metadata_path = ROOT_DIR_METADATA / FLIGHT_DAY / meta_data
-    #     acquisition_data_csv = pd.read_csv(metadata_path)
+            gt_lat = row_2["lat"]
+            gt_lon = row_2["lon"]
 
-    # for index, row in acquisition_data_csv.iterrows():
-    #     # frame_number = row["frame_cnt"]
-    #     frame_number = 417
-    #     x = 984.435
-    #     y = 853.580
-
-    #     k, dist_coeffs = load_intrinsics(CALIB)
-    #     video_path = ROOT_DIR_DATASET / FLIGHT_DAY / video_file
-    #     image = read_frame(video_path, frame_number)
-
-    #     if image is not None:
-    #         # show_frame_with_click(image, frame_number)
-    #         gps, image_path = save_frame_with_fixed_point(
-    #             image=image,
-    #             frame_number=frame_number,
-    #             x=x,
-    #             y=y,
-    #             row=row,
-    #             k=k,
-    #             dist_coeffs=dist_coeffs,
-    #             grid_step=100,
-    #             output_dir="gps_debug_frames",
-    #         )
-    #     else:
-    #         print(f"Could not read frame {frame_number} from video.\n")
-
-    #     break
+            k, dist_coeffs = load_intrinsics(CALIB)
+            video_path = ROOT_DIR_DATASET / FLIGHT / video_file
+            image = read_frame(video_path, frame_number)
+        
+            if image is not None:
+                # show_frame_with_click(image, frame_number)
+                try:
+                    gps, image_path = save_frame_with_fixed_point(
+                        image=image,
+                        frame_number=frame_number,
+                        x=x,
+                        y=y,
+                        row=row,
+                        k=k,
+                        dist_coeffs=dist_coeffs,
+                        grid_step=100,
+                        output_dir="gps_debug_frames",
+                        gt_lat=gt_lat,
+                        gt_lon=gt_lon,
+                        compute_type="init"
+                    )
+                except Exception as e:
+                    print(f"Error processing frame {frame_number}: {e}")
+            else:
+                pri
