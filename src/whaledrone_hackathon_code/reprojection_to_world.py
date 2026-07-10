@@ -10,7 +10,7 @@ import cv2
 import json
 from pathlib import Path
 from scipy.spatial.transform import Rotation as R
-from whaledrone_hackathon_code.dataset import load_flight
+from whaledrone_hackathon_code.dataset import load_flight, find_closest_time_row
 from whaledrone_hackathon_code.geo_utils import distance_points
 
 ROOT_DIR = Path("/share/projects/whale_drone_hack")
@@ -217,7 +217,7 @@ def pixel_to_gps(
     if debug:
         print("Rotation Matrix : ", R_cam_to_world)
         print("Ray cam : ", ray_cam)
-        print("Ray worldo : ", ray_world)
+        print("Ray world : ", ray_world)
 
     # 5. Intersection avec le sol z = 0
     if abs(ray_world[2]) < 1e-8:
@@ -337,6 +337,9 @@ def save_frame_with_fixed_point(
     y,
     row,
     k,
+    yaw,
+    pitch,
+    roll,
     dist_coeffs=None,
     grid_step=100,
     gt_lat=None,
@@ -393,11 +396,11 @@ def save_frame_with_fixed_point(
             drone_lat=row["latitude"],
             drone_lon=row["longitude"],
             altitude_agl=row["rel_alt"],
-            yaw=row["gb_yaw"],
-            pitch=row["gb_pitch"],
-            roll=row["gb_roll"],
+            yaw=yaw,
+            pitch=pitch,
+            roll=roll,
             dist_coeffs=dist_coeffs,
-            degrees=False,
+            degrees=True,
         )
     elif compute_type == "fov":
         fov = Fov()
@@ -409,12 +412,11 @@ def save_frame_with_fixed_point(
             vertical_fov=39.96,
         )
 
-        print(f"row: {row}")
         
         pix_gps = fov.get_gps_point(
             image_point=(x, y),
             drone_height=row["rel_alt"],
-            yaw_pitch_roll=(row["gb_yaw"], row["gb_pitch"], row["gb_roll"]),
+            yaw_pitch_roll=(yaw, pitch, roll),
             pos=(row["latitude"], row["longitude"]),
         )
 
@@ -685,24 +687,21 @@ class Fov:
         return lat, lon
 
 
-
 if __name__ == "__main__":
     # Example usage of the pixel_to_gps function with a specific flight and video acquisition
     FLIGHT = "Jan-16th-2026-02-49PM-Flight-Airdata"
     flight_dir = ROOT_DIR_DATASET / FLIGHT
-    
-    annotations_file = f"annotations_{FLIGHT}.csv"
-    annotation_path = ROOT_DIR_DATASET / annotations_file
-
-    VIDEO_ACQUISITION = "DJI_20260116154954_0001_V"
     flight_info_dict = get_sub_info_dict(
         data_json_dict=DATA_JSON, key="flight_day", value=FLIGHT
     )
 
-    
+    annotations_file = f"annotations_{FLIGHT}.csv"
+    annotation_path = ROOT_DIR_DATASET / annotations_file
 
     df = load_flight(annotation_path, flight_dir)
 
+    VIDEO_ACQUISITION = "DJI_20260116154954_0001_V"
+    
     video_info_dict = get_sub_info_dict(
         data_json_dict=flight_info_dict["video_files"],
         key="video_file",
@@ -716,7 +715,7 @@ if __name__ == "__main__":
     segment = ROOT_DIR_DATASET / FLIGHT / video_file
 
     df_testing_segment = df[df["segment"] == segment]
-    sel_cols = ["name", "frame", "image_x", "image_y", "lat", "lon"]
+    sel_cols = ["name", "frame", "image_x", "image_y", "lat", "lon", "yaw", "pitch", "roll"]
     print(df_testing_segment[sel_cols].iloc[0:10])
     
     k, dist_coeffs = load_intrinsics(CALIB)
@@ -727,42 +726,60 @@ if __name__ == "__main__":
         )
     else:
         metadata_path = ROOT_DIR_METADATA / FLIGHT / meta_data
-        acquisition_data_csv = pd.read_csv(metadata_path)
+        df_telemetry = pd.read_csv(metadata_path)
 
-    save_number = 0
-    for index, row in acquisition_data_csv.iterrows():
-        # frame_number = row["frame_cnt"]
-        for index_2, row_2 in df_testing_segment.iterrows():
-            
-            frame_number = row_2["frame"]
-            x = row_2["image_x"]
-            y = row_2["image_y"]
+    i = 0
+    for row in df_testing_segment.itertuples(index=False):
+        annotated_lat = row.lat
+        annotated_lon = row.lon
+        annotated_time = row.time
+        annotated_frame = row.frame
 
-            gt_lat = row_2["lat"]
-            gt_lon = row_2["lon"]
+        # sync telemetry row
+        sync_telemetry_row = find_closest_time_row(df=df_telemetry, time_col="datetime", target_datetime=annotated_time, offset_s=3600)
 
-            k, dist_coeffs = load_intrinsics(CALIB)
-            video_path = ROOT_DIR_DATASET / FLIGHT / video_file
-            image = read_frame(video_path, frame_number)
-        
-            if image is not None:
-                # show_frame_with_click(image, frame_number)
-                try:
-                    gps, image_path = save_frame_with_fixed_point(
-                        image=image,
-                        frame_number=frame_number,
-                        x=x,
-                        y=y,
-                        row=row,
-                        k=k,
-                        dist_coeffs=dist_coeffs,
-                        grid_step=100,
-                        output_dir="gps_debug_frames",
-                        gt_lat=gt_lat,
-                        gt_lon=gt_lon,
-                        compute_type="init"
-                    )
-                except Exception as e:
-                    print(f"Error processing frame {frame_number}: {e}")
-            else:
-                pri
+
+        k, dist_coeffs = load_intrinsics(CALIB)
+        video_path = ROOT_DIR_DATASET / FLIGHT / video_file
+        image = read_frame(video_path, annotated_frame)
+
+        if image is not None:
+            # show_frame_with_click(image, frame_number)
+            print(f"Processing: {row.name}:\n"
+                  f"  Frame: {annotated_frame}\n"
+                  f"  x: {row.image_x}\n"
+                  f"  y: {row.image_y}\n"
+                  f"  Annotated Lat: {annotated_lat}\n"
+                  f"  Annotated Lon: {annotated_lon}\n"
+                  f"  Telemetry Lat: {sync_telemetry_row.latitude}\n"
+                  f"  Telemetry Lon: {sync_telemetry_row.longitude}\n"
+                  f"  Telemetry Alt: {sync_telemetry_row.rel_alt}\n"
+                  f"  Telemetry Yaw: {sync_telemetry_row.gb_yaw}\n"
+                  f"  Telemetry Pitch: {sync_telemetry_row.gb_pitch}\n"
+                  f"  Telemetry Roll: {sync_telemetry_row.gb_roll}\n")
+            try:
+                gps, image_path = save_frame_with_fixed_point(
+                    image=image,
+                    frame_number=annotated_frame,
+                    x=row.image_x,
+                    y=row.image_y,
+                    row=sync_telemetry_row,
+                    yaw=sync_telemetry_row.gb_yaw,
+                    pitch=sync_telemetry_row.gb_pitch,
+                    roll=sync_telemetry_row.gb_roll,
+                    k=k,
+                    dist_coeffs=dist_coeffs,
+                    grid_step=100,
+                    output_dir="gps_debug_frames",
+                    gt_lat=annotated_lat,
+                    gt_lon=annotated_lon,
+                    compute_type="init"
+                )
+            except Exception as e:
+                print(f"Error processing frame {annotated_frame}: {e}")
+        else:
+            print(f"Could not read frame {annotated_frame} from video.\n")
+
+        i += 1
+        if i == 1:  # Limit to first 10 frames for testing
+            break
