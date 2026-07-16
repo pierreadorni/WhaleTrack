@@ -21,3 +21,7 @@ __pycache__/
 
 # Marimo 
 __marimo__/
+
+# Web app
+webapp/frontend/node_modules/
+webapp/frontend/dist/
