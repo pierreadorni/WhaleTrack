@@ -1,3 +1,23 @@
+# Python virtual environments
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.env/
+.venv/
+
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# Python cache
+__pycache__/
+
+
+# Jupyter Notebook cache
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Marimo 
+__marimo__/
