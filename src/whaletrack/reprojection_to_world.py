@@ -10,8 +10,8 @@ import cv2
 import json
 from pathlib import Path
 from scipy.spatial.transform import Rotation as R
-from whaledrone_hackathon_code.dataset import load_flight, find_closest_time_row
-from whaledrone_hackathon_code.geo_utils import distance_points
+from whaletrack.dataset import load_flight, find_closest_time_row
+from whaletrack.geo_utils import distance_points
 
 ROOT_DIR = Path("/share/projects/whale_drone_hack")
 

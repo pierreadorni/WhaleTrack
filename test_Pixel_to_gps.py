@@ -11,9 +11,9 @@ def _():
     #
     import pandas as pd
 
-    from whaledrone_hackathon_code.reprojection_to_world import pixel_to_gps, load_intrinsics, ROOT_DIR, ROOT_DIR_DATASET, ROOT_DIR_METADATA, ALL_FLIGHTS, CALIB, DATA_JSON
+    from whaletrack.reprojection_to_world import pixel_to_gps, load_intrinsics, ROOT_DIR, ROOT_DIR_DATASET, ROOT_DIR_METADATA, ALL_FLIGHTS, CALIB, DATA_JSON
 
-    from whaledrone_hackathon_code.dataset import load_flight
+    from whaletrack.dataset import load_flight
 
     k, dist_coeffs = load_intrinsics(CALIB)
 
@@ -47,8 +47,8 @@ def _(ROOT_DIR_DATASET, load_flight):
 
 @app.cell
 def _():
-    from whaledrone_hackathon_code.dataset import find_closest_time_row
-    from whaledrone_hackathon_code.reprojection_to_world import get_telemetry_file
+    from whaletrack.dataset import find_closest_time_row
+    from whaletrack.reprojection_to_world import get_telemetry_file
     """
     time = df.iloc[0].time
 
@@ -79,8 +79,8 @@ def _(
     skip_segment = False
 
     from math import sqrt
-    from whaledrone_hackathon_code.geo_utils import distance_points
-    from whaledrone_hackathon_code.reprojection_to_world import zoom_intrinsics
+    from whaletrack.geo_utils import distance_points
+    from whaletrack.reprojection_to_world import zoom_intrinsics
 
     distance_error = []
     for row in df.itertuples():

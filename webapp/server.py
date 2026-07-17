@@ -24,7 +24,7 @@ from ultralytics import YOLO
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from whaledrone_hackathon_code.track_and_geolocate import (
+from whaletrack.track_and_geolocate import (
     assign_stable_track_id,
     geographic_distance_m,
     load_intrinsics,
@@ -233,7 +233,7 @@ def is_rotation(telemetry, telemetry_frame, fps, arguments):
 
 def estimate_obb_length(corners, K, drone_metadata, distortion):
     """Estimate the longest OBB edge by reprojection of its endpoints."""
-    from whaledrone_hackathon_code.geo_projection import pixel_to_gps
+    from whaletrack.geo_projection import pixel_to_gps
 
     projected = []
     for x, y in corners:
@@ -369,7 +369,7 @@ def process_video(cache, arguments, telemetry, K_base, distortion):
                         .mean(axis=0)
                     )
                     try:
-                        from whaledrone_hackathon_code.geo_projection import (
+                        from whaletrack.geo_projection import (
                             pixel_to_gps,
                         )
 

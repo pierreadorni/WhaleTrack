@@ -16,9 +16,9 @@ from ultralytics import YOLO
 from ultralytics.trackers import BOTSORT
 
 ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT / "WhaleDrone_Hackathon_code" / "src"))
+sys.path.insert(0, str(ROOT / "whaletrack" / "src"))
 
-from whaledrone_hackathon_code.geo_projection import pixel_to_gps
+from whaletrack.geo_projection import pixel_to_gps
 
 
 TELEMETRY_PATTERN = re.compile(

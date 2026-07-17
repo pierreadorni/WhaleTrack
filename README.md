@@ -13,7 +13,7 @@ TODO : define Licence
 pixi install`
 ``̀
 ```bash
-pixi run python src/whaledrone_hackathon_code/reprojection_to_world.py
+pixi run python src/whaletrack/reprojection_to_world.py
 ``̀
 
 ### Installation with `pip`
