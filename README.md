@@ -5,7 +5,8 @@
 This repository contains the code accompagnying a paper presented at the 2nd Workshop on Marine Vision in conjunction with the *19th European Conference on Computer Vision* -- ECCV 2026 
 
 
-## Installation
+## Installation
+
 ... WIP ...
 
 TODO : define Licence 
