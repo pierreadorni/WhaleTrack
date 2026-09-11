@@ -17,6 +17,7 @@ platforms = ["linux-64"]
 whaletrack = { path = ".", editable = true }
 
 [tool.pixi.tasks]
+get_dataset = "python get_dataset.py"
 
 [tool.pixi.dependencies]
 matplotlib = ">=3.11.0,<4"
@@ -36,4 +37,5 @@ flask_cors = ">=4.0.0,<5"
 ultralytics = ">=8.4.96,<9"
 torchvision = ">=0.28.0,<0.29"
 huggingface_hub = ">=1.31.0,<2"
+typer = ">=0.27.2,<0.28"
 
