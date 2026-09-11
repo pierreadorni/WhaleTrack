@@ -14,8 +14,8 @@ License : see LICENSE file
 > [!TIP]
 > If you neeed to install `pixi`, please visit the [Pixi Installation Guide](https://pixi.prefix.dev/latest/installation/).
 
-````bash
-pixi install`
+```bash
+pixi install
 ``̀
 
 ```bash
@@ -44,13 +44,13 @@ You can run it either with pixi or with python.
 
 With `pixi`:
 
-```
+```bash
 pixi run get_dataset --minimal
 ```
 
 or inside your virtual environment :
 
-```
+```bash
 python get_dataset.py --minimal
 ```
 
