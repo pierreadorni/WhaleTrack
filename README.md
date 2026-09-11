@@ -14,6 +14,7 @@ License : see LICENSE file
 > [!TIP]
 > If you neeed to install `pixi`, please visit the [Pixi Installation Guide](https://pixi.prefix.dev/latest/installation/).
 
+
 ```bash
 pixi install
 ``̀
