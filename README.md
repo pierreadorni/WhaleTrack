@@ -17,22 +17,22 @@ License : see LICENSE file
 
 ```bash
 pixi install
-``̀
+```
 
 ```bash
 pixi run python src/whaletrack/reprojection_to_world.py
-``̀
+```
 
-### Installation with `pip`
+### Installation with `pip`
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate # Linux/Mac
 # .venv\Scripts\activate # Windows
 pip install -e .
-````
+```
 
-## Get the dataset
+## Get the dataset
 
 To run the WhaleTrack detection, tracking, and georeferencing pipeline you need to get :
 
