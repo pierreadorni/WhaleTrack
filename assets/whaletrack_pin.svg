@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="17.966497mm"
+   height="24.688032mm"
+   viewBox="0 0 17.966497 24.688032"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient2">
+      <stop
+         style="stop-color:#95c3e8;stop-opacity:1;"
+         offset="0.60001564"
+         id="stop10" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop11" />
+    </linearGradient>
+    <linearGradient
+       id="pinGradient"
+       x1="76.43499"
+       y1="36.632439"
+       x2="360.33636"
+       y2="320.53384"
+       gradientTransform="matrix(0.22405777,0,0,0.30119075,79.706233,28.966647)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#38ef7d"
+         stop-opacity="0"
+         id="stop1" />
+      <stop
+         offset="0%"
+         stop-color="#29b6f6"
+         id="stop2" />
+      <stop
+         offset="100%"
+         stop-color="#0277bd"
+         id="stop3" />
+    </linearGradient>
+    <linearGradient
+       id="tailGradient"
+       x1="63.729942"
+       y1="183.14586"
+       x2="63.729942"
+       y2="338.93015"
+       gradientTransform="matrix(1.412209,0,0,0.70811048,34.635692,21.621523)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#0288d1"
+         id="stop6"
+         style="stop-color:#02649d;stop-opacity:1;" />
+      <stop
+         offset="100%"
+         stop-color="#01579b"
+         id="stop7" />
+    </linearGradient>
+    <radialGradient
+       id="dropShadow"
+       cx="24.717342"
+       cy="201.08588"
+       r="6.7972689"
+       gradientTransform="matrix(0.13858218,0,0,0.03023611,64.318896,56.127147)"
+       fx="24.717342"
+       fy="201.08588"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#000000"
+         stop-opacity="0.2"
+         id="stop8" />
+      <stop
+         offset="100%"
+         stop-color="#000000"
+         stop-opacity="0"
+         id="stop9" />
+    </radialGradient>
+    <radialGradient
+       xlink:href="#linearGradient2"
+       id="radialGradient11"
+       cx="198.25186"
+       cy="343.7908"
+       fx="198.25186"
+       fy="343.7908"
+       r="139.23932"
+       gradientTransform="matrix(0.24465505,0,0,0.06684102,80.134081,101.13082)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#tailGradient"
+       id="linearGradient14"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.34550406,0,0,0.1732428,79.993482,35.503612)"
+       x1="63.729942"
+       y1="183.14586"
+       x2="63.729942"
+       y2="338.93015" />
+    <linearGradient
+       xlink:href="#tailGradient"
+       id="linearGradient15"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.34550406,0,0,0.1732428,79.993482,35.503612)"
+       x1="63.729942"
+       y1="183.14586"
+       x2="63.729942"
+       y2="338.93015" />
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-68.281973,-58.716416)">
+    <!-- Soft Drop Shadow Base -->
+    <ellipse
+       cx="77.265221"
+       cy="79.10688"
+       rx="3.5602405"
+       ry="0.77677977"
+       fill="url(#dropShadow)"
+       id="ellipse9"
+       style="fill:url(#dropShadow);stroke-width:0.264582" />
+    <g
+       id="logo-mark"
+       transform="matrix(0.26458333,0,0,0.26458333,43.229954,48.13308)">
+      <path
+         style="fill:url(#radialGradient11);fill-opacity:0.445207;stroke:none;stroke-width:0.865511;stroke-linecap:round;stroke-dasharray:3.46204, 0.865511"
+         id="path1"
+         d="m 158.95336,128.25204 a 33.952442,9.1989384 0 0 1 -45.56213,4.07748 33.952442,9.1989384 0 0 1 -15.111618,-12.33886 33.952442,9.1989384 0 0 1 45.520988,-4.11107 33.952442,9.1989384 0 0 1 15.23554,12.32766" />
+      <!-- Outer Location Pin Shape -->
+      <path
+         d="m 128.63724,39.999999 c -19.5724,0 -31.805155,15.170859 -31.805155,35.858393 0,17.929196 18.349125,37.237558 31.805155,49.650078 13.45603,-12.41252 31.80516,-31.720882 31.80516,-49.650078 0,-20.687534 -12.23275,-35.858393 -31.80516,-35.858393 z"
+         fill="url(#pinGradient)"
+         id="path9"
+         style="fill:url(#pinGradient);stroke-width:1" />
+      <!-- Right-half 3D Shadow Overlay -->
+      <!-- Inner Cutout Circle (Background Hole) -->
+      <ellipse
+         cx="128.63724"
+         cy="70.581879"
+         fill="#ffffff"
+         id="circle10"
+         rx="23.785923"
+         ry="23.383198"
+         style="stroke-width:1" />
+      <!-- Whale Tail Silhouette -->
+      <path
+         d="m 128.52176,96.637176 c -6.25488,-22.49658 -22.83933,-12.458714 -25.84031,-37.131417 0.53997,-3.051423 4.49229,6.154971 11.228,6.594909 6.7357,0.439939 7.68538,-2.357755 10.30677,1.559642 2.6214,3.917397 3.98955,7.930572 4.90963,9.46405 0.8229,-1.371492 1.41012,-5.563404 4.66952,-9.46405 3.45385,-4.133349 2.88701,-1.814103 9.9461,-2.055893 7.05909,-0.24179 9.86828,-9.768484 11.09156,-6.098658 -2.64134,21.316484 -19.28177,16.094623 -24.73907,37.131417 -0.0205,0.296429 -1.5722,0 -1.5722,0 z"
+         fill="url(#tailGradient)"
+         id="path11"
+         style="fill:url(#linearGradient14);stroke:#ffffff;stroke-width:2.51339;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         d="m 128.52176,96.637176 c -6.25488,-22.49658 -22.83933,-12.458714 -25.84031,-37.131417 0.53997,-3.051423 4.49229,6.154971 11.228,6.594909 6.7357,0.439939 7.68538,-2.357755 10.30677,1.559642 2.6214,3.917397 3.98955,7.930572 4.90963,9.46405 0.8229,-1.371492 1.41012,-5.563404 4.66952,-9.46405 3.45385,-4.133349 2.88701,-1.814103 9.9461,-2.055893 7.05909,-0.24179 9.86828,-9.768484 11.09156,-6.098658 -2.64134,21.316484 -19.28177,16.094623 -24.73907,37.131417 -0.0205,0.296429 -1.5722,0 -1.5722,0 z"
+         fill="url(#tailGradient)"
+         id="path12"
+         style="fill:url(#linearGradient15);stroke:#ffffff;stroke-width:2.51339;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

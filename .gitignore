@@ -25,3 +25,10 @@ __marimo__/
 # Web app
 webapp/frontend/node_modules/
 webapp/frontend/dist/
+# Web app output
+webapp/configs/
+webapp/data/
+webapp/outputs
+
+# Dataset (from get_dataset.py script)
+dataset/
