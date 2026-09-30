@@ -12,14 +12,17 @@ import time
 from collections import defaultdict
 from io import BytesIO, StringIO
 from pathlib import Path
-from types import SimpleNamespace
 
 import cv2
 import numpy as np
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from ultralytics import YOLO
+
+from whaletrack.geo_projection import pixel_to_gps
+
 # TODO: path to Ultralytics Settings  For help see https://docs.ultralytics.com/quickstart/#ultralytics-settings.
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -233,7 +236,6 @@ def is_rotation(telemetry, telemetry_frame, fps, arguments):
 
 def estimate_obb_length(corners, K, drone_metadata, distortion):
     """Estimate the longest OBB edge by reprojection of its endpoints."""
-    from whaletrack.geo_projection import pixel_to_gps
 
     projected = []
     for x, y in corners:
@@ -369,10 +371,6 @@ def process_video(cache, arguments, telemetry, K_base, distortion):
                         .mean(axis=0)
                     )
                     try:
-                        from whaletrack.geo_projection import (
-                            pixel_to_gps,
-                        )
-
                         latitude, longitude = pixel_to_gps(
                             x,
                             y,
